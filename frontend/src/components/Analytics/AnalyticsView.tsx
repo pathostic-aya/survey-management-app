@@ -1,16 +1,27 @@
 import React, { useMemo } from 'react';
-import { mockProjects, mockEquipment } from '../../data/mockData';
+import { useQuery } from '@tanstack/react-query';
+import { projectApi } from '../../services/api';
+import { Project } from '../../types/project';
 
 const AnalyticsView: React.FC = () => {
+  // APIからプロジェクトデータを取得
+  const { data: projects = [], isLoading, error } = useQuery<Project[]>({
+    queryKey: ['projects'],
+    queryFn: () => projectApi.getAll(),
+  });
+
   // 機材使用回数の集計
   const equipmentUsage = useMemo(() => {
     const usage: { [key: string]: number } = {};
     
-    mockEquipment.forEach(eq => {
-      usage[eq.name] = 0;
+    // 利用可能な機材リストを初期化
+    const availableEquipment = ['FARO', 'L2pro', 'Pro3', 'RTC', 'BLK', 'Pro2'];
+    availableEquipment.forEach(eq => {
+      usage[eq] = 0;
     });
 
-    mockProjects.forEach(project => {
+    // プロジェクトごとに機材使用回数をカウント
+    projects.forEach(project => {
       project.equipment.forEach(eq => {
         if (usage[eq] !== undefined) {
           usage[eq]++;
@@ -21,24 +32,24 @@ const AnalyticsView: React.FC = () => {
     return Object.entries(usage)
       .map(([name, count]) => ({ name, count }))
       .sort((a, b) => b.count - a.count);
-  }, []);
+  }, [projects]);
 
   // 進捗状況別の件数
   const statusStats = useMemo(() => {
     const stats: { [key: string]: number } = {};
     
-    mockProjects.forEach(project => {
+    projects.forEach(project => {
       stats[project.status] = (stats[project.status] || 0) + 1;
     });
 
     return Object.entries(stats).map(([status, count]) => ({ status, count }));
-  }, []);
+  }, [projects]);
 
   // 月別プロジェクト数
   const monthlyStats = useMemo(() => {
     const monthly: { [key: string]: number } = {};
     
-    mockProjects.forEach(project => {
+    projects.forEach(project => {
       if (project.startDate) {
         const month = new Date(project.startDate).toLocaleDateString('ja-JP', { 
           year: 'numeric', 
@@ -51,7 +62,7 @@ const AnalyticsView: React.FC = () => {
     return Object.entries(monthly)
       .map(([month, count]) => ({ month, count }))
       .sort((a, b) => a.month.localeCompare(b.month));
-  }, []);
+  }, [projects]);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -64,6 +75,14 @@ const AnalyticsView: React.FC = () => {
     }
   };
 
+  if (isLoading) {
+    return <div className="text-center py-12">読み込み中...</div>;
+  }
+
+  if (error) {
+    return <div className="text-center py-12 text-red-600">エラーが発生しました</div>;
+  }
+
   return (
     <div className="space-y-6">
       <h2 className="text-lg font-semibold text-gray-900">分析・集計</h2>
@@ -71,7 +90,7 @@ const AnalyticsView: React.FC = () => {
       {/* 概要統計 */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div className="bg-white p-6 rounded-lg shadow">
-          <div className="text-2xl font-bold text-blue-600">{mockProjects.length}</div>
+          <div className="text-2xl font-bold text-blue-600">{projects.length}</div>
           <div className="text-sm text-gray-500">総プロジェクト数</div>
         </div>
         <div className="bg-white p-6 rounded-lg shadow">
@@ -133,7 +152,7 @@ const AnalyticsView: React.FC = () => {
                     <div
                       className={`h-2 rounded-full ${getStatusColor(status)}`}
                       style={{
-                        width: `${count > 0 ? Math.max((count / mockProjects.length) * 100, 5) : 0}%`
+                        width: `${count > 0 ? Math.max((count / projects.length) * 100, 5) : 0}%`
                       }}
                     ></div>
                   </div>

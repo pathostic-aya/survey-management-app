@@ -1,12 +1,49 @@
 import React, { useState } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { projectApi } from '../../services/api';
 import { Project } from '../../types/project';
-import { mockProjects } from '../../data/mockData';
 import ProjectForm from './ProjectForm';
+import ImportDialog from './ImportDialog';
 
 const ProjectList: React.FC = () => {
-  const [projects, setProjects] = useState<Project[]>(mockProjects);
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [showForm, setShowForm] = useState(false);
+  const queryClient = useQueryClient();
+  const [showImportDialog, setShowImportDialog] = useState(false);
+
+  const { data: projects = [], isLoading, error } = useQuery<Project[]>({
+    queryKey: ['projects'],
+    queryFn: () => projectApi.getAll(),
+  });
+
+  // プロジェクト作成
+  const createProjectMutation = useMutation({
+    mutationFn: projectApi.create,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['projects'] });
+      setShowForm(false);
+      setSelectedProject(null);
+    },
+  });
+
+  // プロジェクト更新
+  const updateProjectMutation = useMutation({
+    mutationFn: ({ id, data }: { id: number; data: Partial<Project> }) => 
+      projectApi.update(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['projects'] });
+      setShowForm(false);
+      setSelectedProject(null);
+    },
+  });
+
+  // プロジェクト削除
+  const deleteProjectMutation = useMutation({
+    mutationFn: projectApi.delete,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['projects'] });
+    },
+  });
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -22,23 +59,18 @@ const ProjectList: React.FC = () => {
   const handleSave = (formData: Omit<Project, 'id' | 'createdAt' | 'updatedAt'>) => {
     if (selectedProject) {
       // 編集
-      setProjects(prev => prev.map(p => 
-        p.id === selectedProject.id 
-          ? { ...p, ...formData, updatedAt: new Date().toISOString().split('T')[0] }
-          : p
-      ));
+      updateProjectMutation.mutate({
+        id: selectedProject.id,
+        data: { ...formData, updatedBy: '管理者' }
+      });
     } else {
       // 新規追加
-      const newProject: Project = {
+      createProjectMutation.mutate({
         ...formData,
-        id: Math.max(...projects.map(p => p.id)) + 1,
-        createdAt: new Date().toISOString().split('T')[0],
-        updatedAt: new Date().toISOString().split('T')[0],
-      };
-      setProjects(prev => [...prev, newProject]);
+        createdBy: '管理者',
+        updatedBy: '管理者'
+      });
     }
-    setShowForm(false);
-    setSelectedProject(null);
   };
 
   const handleEdit = (project: Project) => {
@@ -48,7 +80,7 @@ const ProjectList: React.FC = () => {
 
   const handleDelete = (id: number) => {
     if (window.confirm('このプロジェクトを削除しますか？')) {
-      setProjects(prev => prev.filter(p => p.id !== id));
+      deleteProjectMutation.mutate(id);
     }
   };
 
@@ -57,16 +89,32 @@ const ProjectList: React.FC = () => {
     setSelectedProject(null);
   };
 
+  if (isLoading) {
+    return <div className="text-center py-12">読み込み中...</div>;
+  }
+
+  if (error) {
+    return <div className="text-center py-12 text-red-600">エラーが発生しました</div>;
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h2 className="text-lg font-semibold text-gray-900">プロジェクト一覧</h2>
-        <button 
-          onClick={() => setShowForm(true)}
-          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium"
-        >
-          新規追加
-        </button>
+        <div className="flex space-x-2">
+          <button 
+            onClick={() => setShowImportDialog(true)}
+            className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm font-medium"
+          >
+            Excelインポート
+          </button>
+          <button 
+            onClick={() => setShowForm(true)}
+            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium"
+          >
+            新規追加
+          </button>
+        </div>
       </div>
 
       <div className="bg-white shadow overflow-hidden sm:rounded-md">
@@ -144,6 +192,13 @@ const ProjectList: React.FC = () => {
           project={selectedProject}
           onSave={handleSave}
           onCancel={handleCancel}
+        />
+      )}
+
+      {showImportDialog && (
+        <ImportDialog
+          isOpen={showImportDialog}
+          onClose={() => setShowImportDialog(false)}
         />
       )}
 

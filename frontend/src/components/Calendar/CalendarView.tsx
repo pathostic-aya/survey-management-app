@@ -2,7 +2,9 @@ import React, { useState, useMemo } from 'react';
 import { Calendar, momentLocalizer, View } from 'react-big-calendar';
 import moment from 'moment';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
-import { mockProjects } from '../../data/mockData';
+import { useQuery } from '@tanstack/react-query';
+import { projectApi } from '../../services/api';
+import { Project } from '../../types/project';
 
 const localizer = momentLocalizer(moment);
 
@@ -24,9 +26,15 @@ const CalendarView: React.FC = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [view, setView] = useState<View>('month');
 
+  // APIからプロジェクトデータを取得
+  const { data: projects = [], isLoading, error } = useQuery<Project[]>({
+    queryKey: ['projects'],
+    queryFn: () => projectApi.getAll(),
+  });
+
   // プロジェクトデータをカレンダーイベントに変換
   const events: CalendarEvent[] = useMemo(() => {
-    return mockProjects
+    return projects
       .filter(project => project.startDate && project.endDate)
       .map(project => ({
         id: project.id,
@@ -41,7 +49,7 @@ const CalendarView: React.FC = () => {
           status: project.status,
         },
       }));
-  }, []);
+  }, [projects]);
 
   // イベントのスタイルを設定
   const eventStyleGetter = (event: CalendarEvent) => {
@@ -86,6 +94,14 @@ const CalendarView: React.FC = () => {
       <div>{event.resource.equipment.join(', ')}</div>
     </div>
   );
+
+  if (isLoading) {
+    return <div className="text-center py-12">読み込み中...</div>;
+  }
+
+  if (error) {
+    return <div className="text-center py-12 text-red-600">エラーが発生しました</div>;
+  }
 
   return (
     <div className="space-y-4">

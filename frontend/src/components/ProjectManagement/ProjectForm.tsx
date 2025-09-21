@@ -1,12 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { Project } from '../../types/project';
-import { mockEquipment, mockStatuses } from '../../data/mockData';
 
 interface ProjectFormProps {
   project?: Project | null;
   onSave: (project: Omit<Project, 'id' | 'createdAt' | 'updatedAt'>) => void;
   onCancel: () => void;
 }
+
+// マスターデータ
+const availableEquipment = ['FARO', 'Pro2', 'Pro3', 'RTC', 'BLK', 'L2pro'];
+const availableStatuses: Project['status'][] = ['未見積', '見積済', '日程決', '完了', 'ボツ'];
 
 const ProjectForm: React.FC<ProjectFormProps> = ({ project, onSave, onCancel }) => {
   const [formData, setFormData] = useState({
@@ -93,8 +96,8 @@ const ProjectForm: React.FC<ProjectFormProps> = ({ project, onSave, onCancel }) 
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                 required
               >
-                {mockStatuses.map(status => (
-                  <option key={status.id} value={status.name}>{status.name}</option>
+                {availableStatuses.map(status => (
+                  <option key={status} value={status}>{status}</option>
                 ))}
               </select>
             </div>
@@ -161,15 +164,15 @@ const ProjectForm: React.FC<ProjectFormProps> = ({ project, onSave, onCancel }) 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">使用機材</label>
             <div className="grid grid-cols-3 gap-2">
-              {mockEquipment.map(equipment => (
-                <label key={equipment.id} className="inline-flex items-center">
+              {availableEquipment.map(equipment => (
+                <label key={equipment} className="inline-flex items-center">
                   <input
                     type="checkbox"
-                    checked={formData.equipment.includes(equipment.name)}
-                    onChange={(e) => handleEquipmentChange(equipment.name, e.target.checked)}
+                    checked={formData.equipment.includes(equipment)}
+                    onChange={(e) => handleEquipmentChange(equipment, e.target.checked)}
                     className="rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                   />
-                  <span className="ml-2 text-sm text-gray-700">{equipment.name}</span>
+                  <span className="ml-2 text-sm text-gray-700">{equipment}</span>
                 </label>
               ))}
             </div>

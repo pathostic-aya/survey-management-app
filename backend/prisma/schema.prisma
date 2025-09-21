@@ -1,0 +1,59 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Project {
+  id            Int      @id @default(autoincrement())
+  status        String   @default("未見積")
+  companyName   String   @map("company_name")
+  siteName      String   @map("site_name")
+  equipment     Json?    @map("equipment")
+  clientContact String?  @map("client_contact")
+  photographer  String?  @map("photographer")
+  shootPeriod   String?  @map("shoot_period")
+  startDate     DateTime? @map("start_date")
+  endDate       DateTime? @map("end_date")
+  drawingModel  String?  @map("drawing_model")
+  remarks       String?  @map("remarks")
+  siteAddress   String?  @map("site_address")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+  createdBy     String   @map("created_by")
+  updatedBy     String   @map("updated_by")
+
+  @@map("projects")
+}
+
+model Equipment {
+  id   Int    @id @default(autoincrement())
+  name String @unique
+
+  @@map("equipment")
+}
+
+model Status {
+  id        Int @id @default(autoincrement())
+  name      String @unique
+  sortOrder Int @map("sort_order")
+
+  @@map("statuses")
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  name      String   @unique
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("users")
+}
