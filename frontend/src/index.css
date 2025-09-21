@@ -1,0 +1,38 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* React Big Calendar のカスタムスタイル */
+.rbc-calendar {
+  font-family: inherit;
+}
+
+.rbc-header {
+  background-color: #f9fafb;
+  color: #374151;
+  font-weight: 600;
+  padding: 8px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.rbc-today {
+  background-color: #eff6ff;
+}
+
+.rbc-event {
+  font-size: 11px;
+  line-height: 1.2;
+  padding: 2px 4px;
+}
+
+.rbc-month-view {
+  border: 1px solid #e5e7eb;
+}
+
+.rbc-date-cell {
+  padding: 8px;
+}
+
+.rbc-off-range-bg {
+  background-color: #f9fafb;
+}
