@@ -13,7 +13,7 @@ app.use(morgan('combined'));
 app.use(express.json());
 
 // メモリ内データストア（テスト用）
-let projects = [
+let projects: any[] = [
   {
     id: 1,
     status: '完了',
@@ -32,7 +32,7 @@ let projects = [
 ];
 
 // ルート定義
-app.get('/', (req, res) => {
+app.get('/', (req: any, res: any) => {
   res.json({ 
     message: '測量工程表管理システム API',
     status: 'OK',
@@ -40,12 +40,12 @@ app.get('/', (req, res) => {
   });
 });
 
-app.get('/health', (req, res) => {
+app.get('/health', (req: any, res: any) => {
   res.json({ status: 'OK', timestamp: new Date().toISOString() });
 });
 
 // プロジェクトAPI
-app.get('/api/projects', (req, res) => {
+app.get('/api/projects', (req: any, res: any) => {
   console.log('GET /api/projects called');
   res.json({
     data: projects,
@@ -54,7 +54,7 @@ app.get('/api/projects', (req, res) => {
   });
 });
 
-app.post('/api/projects', (req, res) => {
+app.post('/api/projects', (req: any, res: any) => {
   console.log('POST /api/projects called', req.body);
   const newProject = {
     id: Math.max(...projects.map(p => p.id)) + 1,
@@ -66,7 +66,7 @@ app.post('/api/projects', (req, res) => {
   res.status(201).json(newProject);
 });
 
-app.put('/api/projects/:id', (req, res) => {
+app.put('/api/projects/:id', (req: any, res: any) => {
   const id = parseInt(req.params.id);
   console.log(`PUT /api/projects/${id} called`, req.body);
   
@@ -83,7 +83,7 @@ app.put('/api/projects/:id', (req, res) => {
   }
 });
 
-app.delete('/api/projects/:id', (req, res) => {
+app.delete('/api/projects/:id', (req: any, res: any) => {
   const id = parseInt(req.params.id);
   console.log(`DELETE /api/projects/${id} called`);
   
@@ -98,22 +98,22 @@ app.delete('/api/projects/:id', (req, res) => {
 });
 
 // マスタデータAPI（フロントエンド用）
-app.get('/api/status-options', (req, res) => {
+app.get('/api/status-options', (req: any, res: any) => {
   res.json(['完了', '日程決', '見積済', '未見積', 'ボツ']);
 });
 
-app.get('/api/equipment-options', (req, res) => {
+app.get('/api/equipment-options', (req: any, res: any) => {
   res.json(['FARO', 'L2pro', 'Pro3', 'その他']);
 });
 
 // エラーハンドリング
-app.use((err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
+app.use((err: any, req: any, res: any, next: any) => {
   console.error('Error:', err.message);
   res.status(500).json({ error: 'Internal Server Error' });
 });
 
 // 404ハンドリング
-app.use('*', (req, res) => {
+app.use('*', (req: any, res: any) => {
   res.status(404).json({ error: 'Route not found' });
 });
 
