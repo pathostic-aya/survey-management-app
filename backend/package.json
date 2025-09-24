@@ -1,42 +1,30 @@
 {
-  "name": "backend",
+  "name": "survey-management-backend",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "測量工程表管理システム バックエンド",
+  "main": "dist/simple-server.js",
   "scripts": {
     "dev": "nodemon src/server.ts",
     "build": "tsc",
-    "start": "node dist/server.js",
-    "postinstall": "npx prisma generate",
-    "db:deploy": "npx prisma migrate deploy",
-    "db:seed": "node dist/scripts/seed.js"
+    "start": "node dist/simple-server.js",
+    "simple-build": "tsc src/simple-server.ts --outDir dist --target es2020 --module commonjs --esModuleInterop --allowSyntheticDefaultImports --strict --skipLibCheck"
   },
-
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
   "dependencies": {
-    "@prisma/client": "^6.16.2",
-    "bcryptjs": "^3.0.2",
+    "express": "^4.18.2",
     "cors": "^2.8.5",
-    "dotenv": "^17.2.2",
-    "express": "^5.1.0",
-    "helmet": "^8.1.0",
-    "jsonwebtoken": "^9.0.2",
-    "morgan": "^1.10.1",
-    "prisma": "^6.16.2",
-    "socket.io": "^4.8.1"
+    "helmet": "^7.0.0",
+    "morgan": "^1.10.0"
   },
   "devDependencies": {
-    "@types/bcryptjs": "^2.4.6",
-    "@types/cors": "^2.8.19",
-    "@types/express": "^5.0.3",
-    "@types/jsonwebtoken": "^9.0.10",
-    "@types/morgan": "^1.9.10",
-    "@types/node": "^24.5.2",
-    "nodemon": "^3.1.10",
-    "ts-node": "^10.9.2",
-    "tsx": "^4.20.5",
-    "typescript": "^5.9.2"
+    "@types/express": "^4.17.17",
+    "@types/cors": "^2.8.13",
+    "@types/morgan": "^1.9.4",
+    "@types/node": "^20.4.5",
+    "typescript": "^5.1.6",
+    "nodemon": "^3.0.1",
+    "ts-node": "^10.9.1"
+  },
+  "engines": {
+    "node": ">=18.0.0"
   }
 }
